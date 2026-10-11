@@ -1,34 +1,31 @@
-import Link from 'next/link';
-import styles from '@/styles/Home.module.css';
-import SearchForm from '@/components/SearchForm';
-import ProductList from '@/components/ProductList';
-import axios from '@/lib/axios';
 import { useEffect, useState } from 'react';
-import Head from 'next/head';
+import ProductList from '@/components/ProductList';
+import SearchForm from '@/components/SearchForm';
+import axios from '@/lib/axios';
+import styles from '@/styles/Home.module.css';
+import Header from '@/components/Header';
+import Container from '@/components/Container';
 
-export async function getStaticProps() {
-  // 정적 생성 시 Next.js가 실행할 함수를 구현
-  const res = await axios.get('/products');
-  const products = await res.data.results;
+export default function Home() {
+  const [products, setProducts] = useState([]);
 
-  return {
-    props: {
-      products,
-    },
-  };
-}
+  async function getProducts() {
+    const res = await axios.get('/products');
+    const nextProducts = res.data.results;
+    setProducts(nextProducts);
+  }
 
-export default function Home({ products }) {
+  useEffect(() => {
+    getProducts();
+  }, []);
+
   return (
     <>
-      <Head>
-        <title>Codeitmall</title>
-      </Head>
-      <div>
-        <h1>Codeitmall</h1>
+      <Header />
+      <Container>
         <SearchForm />
-        <ProductList products={products} />
-      </div>
+        <ProductList className={styles.products} products={products} />
+      </Container>
     </>
-  );
+  )
 }

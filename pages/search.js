@@ -1,34 +1,38 @@
-import SearchForm from '@/components/SearchForm';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 import ProductList from '@/components/ProductList';
+import SearchForm from '@/components/SearchForm';
 import axios from '@/lib/axios';
-import Head from 'next/head';
+import styles from '@/styles/Search.module.css';
+import Header from '@/components/Header';
+import Container from '@/components/Container';
 
-export async function getServerSideProps(context) {
-  const query = context.query['q'];
+export default function Search() {
+  const [products, setProducts] = useState([]);
+  const router = useRouter();
+  const { q } = router.query;
 
-  const res = await axios.get(`/products/?q=${query}`); // 리퀘스트 요청에 있는 q 사용
-  const products = (await res.data.results) || [];
+  async function getProducts(query) {
+    const res = await axios.get(`/products/?q=${query}`);
+    const nextProducts = res.data.results;
+    setProducts(nextProducts);
+  }
 
-  return {
-    props: {
-      products,
-      query,
-    },
-  };
-}
+  useEffect(() => {
+    getProducts(q);
+  }, [q]);
 
-export default function Search({ products, query }) {
+
   return (
-    <>
-      <Head>
-        <title>{query} 검색 결과 - Codeitmall</title>
-      </Head>
-      <div>
-        <h1>Search</h1>
-        <SearchForm initialQuery={query} />
-        <h2>{query} 검색 결과</h2>
-        <ProductList products={products} />
-      </div>
-    </>
+    <div>
+      <Header />
+      <Container>
+        <SearchForm initialValue={q} />
+        <h2 className={styles.title}>
+          <span className={styles.keyword}>{q}</span> 검색 결과
+        </h2>
+        <ProductList className={styles.productList} products={products} />
+      </Container>
+    </div>
   );
 }
